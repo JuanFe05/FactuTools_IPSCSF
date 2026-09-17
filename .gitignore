@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Variables de entorno (credenciales)
+.env
+
+# Logs
+*.log
+
+# Empaquetado / instalador
+*.spec
+installer/Output/
