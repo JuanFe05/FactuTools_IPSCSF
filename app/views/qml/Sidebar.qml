@@ -30,7 +30,7 @@ Rectangle {
             }
 
             Text {
-                text: "Rename APP"
+                text: "FactuTools"
                 color: "#c7d0f5"
                 font.pixelSize: 12
             }
