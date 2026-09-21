@@ -1,0 +1,25 @@
+import QmlProject
+
+Project {
+    mainFile: "main.qml"
+    mainUiFile: "main.qml"
+
+    QmlFiles {
+        directory: "."
+    }
+
+    JavaScriptFiles {
+        directory: "."
+    }
+
+    ImageFiles {
+        directory: "../resources/images"
+    }
+
+    Environment {
+        QT_QUICK_CONTROLS_STYLE: "Basic"
+    }
+
+    qdsVersion: "4.5"
+    quickVersion: "6.11"
+}
