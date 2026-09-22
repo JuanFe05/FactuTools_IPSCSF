@@ -26,6 +26,7 @@ Rectangle {
                 font.pixelSize: 15
                 font.bold: true
                 wrapMode: Text.WordWrap
+                horizontalAlignment: Text.AlignHCenter
                 Layout.fillWidth: true
             }
 
@@ -33,6 +34,8 @@ Rectangle {
                 text: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "FactuTools"
                 color: "#c7d0f5"
                 font.pixelSize: 12
+                horizontalAlignment: Text.AlignHCenter
+                Layout.fillWidth: true
             }
         }
 

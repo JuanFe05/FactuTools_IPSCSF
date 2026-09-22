@@ -47,7 +47,7 @@ Rectangle {
         }
 
         Text {
-            text: "Bienvenidos a FactuTools"
+            text: "Bienvenidos a " + ((typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "FactuTools")
             color: Theme.text
             font.pixelSize: 15
             Layout.alignment: Qt.AlignHCenter
