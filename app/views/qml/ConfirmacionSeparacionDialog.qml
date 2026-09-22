@@ -4,15 +4,15 @@ import QtQuick.Layouts
 
 Dialog {
     id: root
-    title: "¿Estás seguro de que deseas borrar todos los datos del proceso actual?"
+    title: "¿Deseas iniciar el proceso de separación?"
     modal: true
     standardButtons: Dialog.NoButton
     width: 420
     anchors.centerIn: Overlay.overlay
 
-    signal confirmado()
+    property var separacionCtl: (typeof SeparacionFuripsCtl !== "undefined") ? SeparacionFuripsCtl : null
 
-    property string mensaje: "Se perderán la empresa, tipo de atención, fecha, carpeta y resultados del proceso actual."
+    signal confirmado()
 
     background: Rectangle {
         color: Theme.background
@@ -23,8 +23,8 @@ Dialog {
 
     header: Label {
         text: root.title
-        color: Theme.danger
-        font.pixelSize: 15
+        color: Theme.primaryDark
+        font.pixelSize: 16
         font.bold: true
         wrapMode: Text.WordWrap
         padding: 20
@@ -36,10 +36,18 @@ Dialog {
         spacing: 10
 
         Text {
-            text: root.mensaje
+            text: "Carpeta: " + (root.separacionCtl ? root.separacionCtl.carpetaSeleccionada : "")
             color: Theme.text
-            wrapMode: Text.WordWrap
+            wrapMode: Text.WrapAnywhere
             Layout.fillWidth: true
+        }
+        Text {
+            text: "Archivos FURIPS encontrados: " + (root.separacionCtl ? root.separacionCtl.totalTxtEncontrados : 0)
+            color: Theme.text
+        }
+        Text {
+            text: "Carpetas que se crearán: " + (root.separacionCtl ? root.separacionCtl.carpetasACrear : 0)
+            color: Theme.text
         }
 
         Item { Layout.fillHeight: true }
@@ -55,8 +63,7 @@ Dialog {
                 onClicked: root.close()
             }
             PrimaryButton {
-                text: "Borrar todo"
-                colorAcento: Theme.danger
+                text: "Iniciar separación"
                 onClicked: {
                     root.confirmado()
                     root.close()

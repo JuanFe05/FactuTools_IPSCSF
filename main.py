@@ -1,4 +1,4 @@
-"""Punto de entrada de Rename APP."""
+"""Punto de entrada de FactuTools."""
 from __future__ import annotations
 
 import sys
@@ -13,6 +13,7 @@ from app.config.paths import resource_path
 from app.config.settings import AppConfig
 from app.controllers.app_controller import AppController
 from app.controllers.renombrar_controller import RenombrarController
+from app.controllers.separacion_furips_controller import SeparacionFuripsController
 
 _QML_DIR = resource_path("app", "views", "qml")
 
@@ -30,8 +31,10 @@ def main() -> int:
     engine = QQmlApplicationEngine()
     controlador = AppController()
     renombrar_controlador = RenombrarController()
+    separacion_furips_controlador = SeparacionFuripsController()
     engine.rootContext().setContextProperty("AppCtl", controlador)
     engine.rootContext().setContextProperty("RenombrarCtl", renombrar_controlador)
+    engine.rootContext().setContextProperty("SeparacionFuripsCtl", separacion_furips_controlador)
 
     engine.addImportPath(str(_QML_DIR))
     engine.load(QUrl.fromLocalFile(str(_QML_DIR / "main.qml")))

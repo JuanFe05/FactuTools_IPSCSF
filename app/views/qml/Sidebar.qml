@@ -5,6 +5,14 @@ Rectangle {
     id: root
     width: 260
 
+    property string vistaActual: "renombrar"
+    signal vistaSeleccionada(string vista)
+
+    readonly property var opcionesMenu: [
+        { id: "renombrar", texto: "Renombramiento de soportes" },
+        { id: "separacionFurips", texto: "Separación de FURIPS" }
+    ]
+
     gradient: Gradient {
         orientation: Gradient.Vertical
         GradientStop { position: 0.0; color: "#1938bc" }
@@ -39,32 +47,47 @@ Rectangle {
             }
         }
 
-        Rectangle {
+        ColumnLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 48
-            radius: 8
-            color: "#2947c9"
+            spacing: 8
 
-            RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 12
-                anchors.rightMargin: 12
-                spacing: 10
+            Repeater {
+                model: root.opcionesMenu
 
-                Rectangle {
-                    width: 4
-                    Layout.fillHeight: true
-                    radius: 2
-                    color: Theme.background
-                }
-
-                Text {
-                    text: "Renombramiento de soportes"
-                    color: Theme.background
-                    font.pixelSize: 13
-                    font.bold: true
-                    wrapMode: Text.WordWrap
+                delegate: Rectangle {
                     Layout.fillWidth: true
+                    Layout.preferredHeight: 48
+                    radius: 8
+                    color: root.vistaActual === modelData.id ? "#2947c9" : "transparent"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 10
+
+                        Rectangle {
+                            Layout.preferredWidth: 4
+                            Layout.fillHeight: true
+                            radius: 2
+                            color: root.vistaActual === modelData.id ? Theme.background : "transparent"
+                        }
+
+                        Text {
+                            text: modelData.texto
+                            color: root.vistaActual === modelData.id ? Theme.background : "#c7d0f5"
+                            font.pixelSize: 13
+                            font.bold: root.vistaActual === modelData.id
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.vistaSeleccionada(modelData.id)
+                    }
                 }
             }
         }

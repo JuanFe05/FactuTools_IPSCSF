@@ -6,9 +6,11 @@ from pathlib import Path
 
 from PySide6.QtCore import QThread, Signal
 
+from app.models.furips import ResultadoSeparacion
 from app.models.subcarpeta import ResultadoProceso
 from app.models.tipo_atencion import TipoAtencion
 from app.use_cases.procesar_renombramiento_use_case import ProcesarRenombramientoUseCase
+from app.use_cases.procesar_separacion_furips_use_case import ProcesarSeparacionFuripsUseCase
 
 
 class ProcesoRenombramientoWorker(QThread):
@@ -48,3 +50,34 @@ class ProcesoRenombramientoWorker(QThread):
             self.finished_ok.emit(resultado)
         except Exception:  # noqa: BLE001 - se reporta a la UI, no debe tumbar el hilo
             self.finished_error.emit("No fue posible completar el proceso de renombramiento.")
+
+
+class ProcesoSeparacionFuripsWorker(QThread):
+    """Ejecuta `ProcesarSeparacionFuripsUseCase` (análisis o separación) en un hilo aparte."""
+
+    progreso = Signal(int, int, str)
+    finished_ok = Signal(object)  # ResultadoSeparacion
+    finished_error = Signal(str)
+
+    def __init__(
+        self,
+        carpeta_principal: Path,
+        accion: str = "analizar",
+        parent=None,
+    ) -> None:
+        super().__init__(parent)
+        self._carpeta_principal = carpeta_principal
+        self._accion = accion
+        self._use_case = ProcesarSeparacionFuripsUseCase()
+
+    def run(self) -> None:
+        try:
+            metodo = self._use_case.separar if self._accion == "separar" else self._use_case.analizar
+            resultado: ResultadoSeparacion = metodo(
+                self._carpeta_principal,
+                on_progreso=lambda actual, total, msg: self.progreso.emit(actual, total, msg),
+            )
+            self.finished_ok.emit(resultado)
+        except Exception:  # noqa: BLE001 - se reporta a la UI, no debe tumbar el hilo
+            self.finished_error.emit("No fue posible completar el proceso de separación de FURIPS.")
+
