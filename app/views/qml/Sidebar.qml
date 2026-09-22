@@ -30,7 +30,7 @@ Rectangle {
             }
 
             Text {
-                text: "FactuTools"
+                text: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "FactuTools"
                 color: "#c7d0f5"
                 font.pixelSize: 12
             }

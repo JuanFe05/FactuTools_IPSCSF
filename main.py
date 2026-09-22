@@ -19,7 +19,7 @@ _QML_DIR = resource_path("app", "views", "qml")
 
 def main() -> int:
     config = AppConfig()
-    configure_logging(config.log_level, "RenameApp")
+    configure_logging(config.log_level, config.app_name)
 
     QQuickStyle.setStyle("Basic")
     app = QGuiApplication(sys.argv)

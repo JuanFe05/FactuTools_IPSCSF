@@ -58,7 +58,7 @@ class AppConfig:
         return cls._instancia
 
     def _inicializar(self) -> None:
-        self.app_name = _env("APP_NAME", "FactuTools App")
+        self.app_name = _env("APP_NAME", "FactuTools")
         self.app_version = _env("APP_VERSION", "0.1.0")
         self.org_name = _env("ORG_NAME", "IPS Clínica Salud Florida")
         self.clinic_name = _env("CLINIC_NAME", "IPS Clínica Salud Florida")

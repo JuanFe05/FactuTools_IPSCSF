@@ -9,7 +9,7 @@ ApplicationWindow {
     minimumHeight: 560
     visible: true
     visibility: Window.Maximized
-    title: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "Rename APP"
+    title: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "FactuTools"
     color: Theme.background
 
     StackView {

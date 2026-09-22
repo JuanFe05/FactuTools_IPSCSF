@@ -39,7 +39,7 @@ Rectangle {
         }
 
         Text {
-            text: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "Rename APP"
+            text: (typeof AppCtl !== "undefined" && AppCtl) ? AppCtl.appName : "FactuTools"
             color: Theme.primary
             font.pixelSize: 30
             font.bold: true
@@ -47,7 +47,7 @@ Rectangle {
         }
 
         Text {
-            text: "Bienvenidos a Rename APP"
+            text: "Bienvenidos a FactuTools"
             color: Theme.text
             font.pixelSize: 15
             Layout.alignment: Qt.AlignHCenter

@@ -191,8 +191,8 @@ class FacturaRepository:
 
         cnsctvo_dcto, emprs, fcha_dcto, estado, usrio_realiza, nit, total_valor = fila
         numero_factura_str = str(cnsctvo_dcto).strip() if cnsctvo_dcto is not None else ""
-        if numero_factura_str and not numero_factura_str.upper().startswith("FE01"):
-            numero_factura_str = f"FE01{numero_factura_str}"
+        if numero_factura_str and not numero_factura_str.upper().startswith("SF"):
+            numero_factura_str = f"SF{numero_factura_str}"
 
         return FacturaInfo(
             numero_factura=numero_factura_str,
@@ -238,8 +238,8 @@ class FacturaRepository:
             cnsctvo_fctra_agrpda if cnsctvo_fctra_agrpda and cnsctvo_fctra_agrpda > 0 else cnsctvo_dcto
         )
         numero_factura_str = str(numero_factura_valor).strip() if numero_factura_valor is not None else ""
-        if numero_factura_str and not numero_factura_str.upper().startswith("FE01"):
-            numero_factura_str = f"FE01{numero_factura_str}"
+        if numero_factura_str and not numero_factura_str.upper().startswith("SF"):
+            numero_factura_str = f"SF{numero_factura_str}"
 
         return FacturaInfo(
             numero_factura=numero_factura_str,

@@ -20,6 +20,9 @@ _URGENCIAS_CON_HAU = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "
 _URGECNIAS_SANITAS = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "FE", "OPF"))
 _URGENCIAS_COOSALUD = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "FE", "HAU", "OPF"))
 _URGENCIAS_COMFENALCO = ReglaSoportes(prefijos_obligatorios=("HAU", "LDP", "FE"))
+_URGENCIAS_SALUD_TOTAL = ReglaSoportes(
+    prefijos_obligatorios=("CRC", "HEV", "LDP", "OPF"), grupo_alternativo=("FE", "FACTURA")
+)
 
 _CONFIGS: dict[str, EmpresaConfig] = {
     "COMFENALCO VALLE EPS CONTRIBUTIVO & SUBSIDIADO": EmpresaConfig(
@@ -46,6 +49,13 @@ _CONFIGS: dict[str, EmpresaConfig] = {
             TipoAtencion.CONSULTA_EXTERNA: ReglaSoportes(prefijos_obligatorios=("FE", "CRC", "HEV", "LDP")),
             TipoAtencion.URGENCIAS: ReglaSoportes(prefijos_obligatorios=("FE", "CRC", "HEV", "LDP")),
         },
+    ),
+    # Registradas como dos empresas distintas en la base de datos (contributivo y subsidiado),
+    # pero se presentan como una única opción en el select.
+    "SALUD TOTAL EPS-S S.A. CONTRIBUTIVO Y SUBSIDIADO": EmpresaConfig(
+        nombre="SALUD TOTAL EPS-S S.A.",
+        nombres_alternativos=("SALUD TOTAL EPS-S S.A. (SUBSIDIADO)",),
+        reglas={TipoAtencion.URGENCIAS: _URGENCIAS_SALUD_TOTAL},
     ),
 }
 

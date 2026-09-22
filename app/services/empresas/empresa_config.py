@@ -24,3 +24,6 @@ class EmpresaConfig:
     prefijo_factura: str = "FEV"
     carpeta_incluye_nit: bool = False
     nit_ips: str = "815000253"
+    # Nombres adicionales tal como aparecen en la base de datos que deben aceptarse como la
+    # misma empresa (ej. regímenes registrados con formato distinto al de los sufijos estándar).
+    nombres_alternativos: tuple[str, ...] = ()

@@ -16,7 +16,7 @@ def _directorio_logs(nombre_app: str) -> Path:
     return directorio
 
 
-def configure_logging(nivel: str = "INFO", nombre_app: str = "FactuToolsApp") -> None:
+def configure_logging(nivel: str = "INFO", nombre_app: str = "FactuTools") -> None:
     """Configura handlers de archivo (rotativo) y consola, y captura excepciones no manejadas."""
     logger = logging.getLogger()
     if logger.handlers:

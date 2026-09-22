@@ -50,7 +50,8 @@ class ValidadorPorPrefijos:
         detalles: list[str] = []
         es_correcto = True
 
-        if not empresas_coinciden(factura.empresa, self._config.nombre):
+        nombres_validos = (self._config.nombre, *self._config.nombres_alternativos)
+        if not any(empresas_coinciden(factura.empresa, nombre) for nombre in nombres_validos):
             es_correcto = False
             detalles.append(
                 f"La empresa de la factura ({factura.empresa}) no coincide con la empresa seleccionada."
@@ -85,15 +86,15 @@ class ValidadorPorPrefijos:
             return pdf.name
 
         num_factura = contexto.factura.numero_factura.strip()
-        if not num_factura.upper().startswith("FE01"):
-            num_factura = f"FE01{num_factura}"
+        if not num_factura.upper().startswith("SF"):
+            num_factura = f"SF{num_factura}"
 
         coincidencia = _PATRON_PREFIJO.match(pdf.stem)
         prefijo_detectado = coincidencia.group(0).upper() if coincidencia else ""
         if not prefijo_detectado:
             return pdf.name
 
-        if prefijo_detectado in ("FE", "FEV", "FDE"):
+        if prefijo_detectado in ("FE", "FEV", "FDE", "FACTURA"):
             tipo_documento = self._config.prefijo_factura
         else:
             tipo_documento = prefijo_detectado
@@ -105,8 +106,8 @@ class ValidadorPorPrefijos:
             return contexto.subcarpeta.nombre
 
         num_factura = contexto.factura.numero_factura.strip()
-        if not num_factura.upper().startswith("FE01"):
-            num_factura = f"FE01{num_factura}"
+        if not num_factura.upper().startswith("SF"):
+            num_factura = f"SF{num_factura}"
 
         if self._config.carpeta_incluye_nit:
             # Usar NIT fijo de la empresa (configurado en EmpresaConfig), no el NIT de la factura
