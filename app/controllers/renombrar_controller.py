@@ -27,6 +27,7 @@ class RenombrarController(QObject):
     progresoChanged = Signal()
     renombrarHabilitadoChanged = Signal()
     accionActualChanged = Signal()
+    modoProcesoChanged = Signal()
     procesoTerminado = Signal(dict)
     procesoError = Signal(str)
 
@@ -36,6 +37,8 @@ class RenombrarController(QObject):
         self._empresa_seleccionada = ""
         self._tipo_atencion = ""
         self._fecha_desde = ""
+        self._modo_proceso = "bd"  # "bd" o "csv"
+        self._ruta_csv = ""
         self._total_subcarpetas = 0
         self._total_pdfs = 0
         self._errores_previos: list[str] = []
@@ -62,6 +65,14 @@ class RenombrarController(QObject):
     @Property(str, notify=renombrarHabilitadoChanged)
     def fechaDesde(self) -> str:
         return self._fecha_desde
+
+    @Property(str, notify=modoProcesoChanged)
+    def modoProceso(self) -> str:
+        return self._modo_proceso
+
+    @Property(str, notify=modoProcesoChanged)
+    def rutaCsv(self) -> str:
+        return self._ruta_csv
 
     @Property(int, notify=analisisActualizado)
     def totalSubcarpetas(self) -> int:
@@ -127,18 +138,21 @@ class RenombrarController(QObject):
             or self._empresa_seleccionada
             or self._tipo_atencion
             or self._fecha_desde
+            or self._ruta_csv
             or self._resultados
         )
 
     @Property(bool, notify=renombrarHabilitadoChanged)
     def renombrarHabilitado(self) -> bool:
         """El botón "Renombrar" del dashboard solo se habilita cuando ya hay un análisis
-        completo (empresa + tipo de atención + fecha + carpeta + resultados) y sin
-        errores críticos."""
+        completo (empresa + tipo de atención + origen de datos + carpeta + resultados) y
+        sin errores críticos. El origen de datos es la fecha (modalidad BD) o el CSV
+        (modalidad Archivo CSV)."""
+        origen_listo = bool(self._ruta_csv) if self._modo_proceso == "csv" else bool(self._fecha_desde)
         return (
             bool(self._empresa_seleccionada)
             and bool(self._tipo_atencion)
-            and bool(self._fecha_desde)
+            and origen_listo
             and bool(self._carpeta_seleccionada)
             and self._total_subcarpetas > 0
             and len(self._errores_previos) == 0
@@ -155,6 +169,8 @@ class RenombrarController(QObject):
 
     @Slot(str)
     def seleccionarTipoAtencion(self, tipo_atencion: str) -> None:
+        if self._modo_proceso == "csv":
+            return  # En modalidad CSV el tipo de atención queda fijo en "Urgencias".
         if tipo_atencion != self._tipo_atencion:
             self._tipo_atencion = tipo_atencion
             self.renombrarHabilitadoChanged.emit()
@@ -164,6 +180,29 @@ class RenombrarController(QObject):
         if fecha_iso != self._fecha_desde:
             self._fecha_desde = fecha_iso
             self.renombrarHabilitadoChanged.emit()
+
+    @Slot(str)
+    def seleccionarModoProceso(self, modo: str) -> None:
+        """Cambia la modalidad de origen de datos ("bd" o "csv"). En modalidad CSV el
+        tipo de atención se fija automáticamente en "Urgencias" (no es modificable)."""
+        if modo not in ("bd", "csv") or modo == self._modo_proceso:
+            return
+        self._modo_proceso = modo
+        if modo == "csv":
+            self._tipo_atencion = TipoAtencion.URGENCIAS.value
+        else:
+            self._ruta_csv = ""
+        self.modoProcesoChanged.emit()
+        self.renombrarHabilitadoChanged.emit()
+
+    @Slot(QUrl)
+    def seleccionarArchivoCsv(self, url: QUrl) -> None:
+        ruta = url.toLocalFile()
+        if not ruta:
+            return
+        self._ruta_csv = ruta
+        self.modoProcesoChanged.emit()
+        self.renombrarHabilitadoChanged.emit()
 
     @Slot(QUrl)
     def seleccionarCarpeta(self, url: QUrl) -> None:
@@ -209,12 +248,14 @@ class RenombrarController(QObject):
         self._lanzar_worker(accion="renombrar")
 
     def _lanzar_worker(self, accion: str) -> None:
-        fecha = self._fecha_desde_como_date()
+        es_csv = self._modo_proceso == "csv"
+        fecha = None if es_csv else self._fecha_desde_como_date()
         if (
             not self._empresa_seleccionada
             or not self._tipo_atencion
-            or fecha is None
             or not self._carpeta_seleccionada
+            or (es_csv and not self._ruta_csv)
+            or (not es_csv and fecha is None)
             or self._procesando
         ):
             return
@@ -235,6 +276,7 @@ class RenombrarController(QObject):
             TipoAtencion(self._tipo_atencion),
             fecha,
             accion=accion,
+            ruta_csv=Path(self._ruta_csv) if es_csv else None,
         )
         self._worker.progreso.connect(self._en_progreso)
         self._worker.finished_ok.connect(self._en_finalizado)
@@ -255,6 +297,8 @@ class RenombrarController(QObject):
         self._empresa_seleccionada = ""
         self._tipo_atencion = ""
         self._fecha_desde = ""
+        self._modo_proceso = "bd"
+        self._ruta_csv = ""
         self._total_subcarpetas = 0
         self._total_pdfs = 0
         self._errores_previos = []
@@ -262,6 +306,7 @@ class RenombrarController(QObject):
         self.carpetaSeleccionadaChanged.emit()
         self.analisisActualizado.emit()
         self.resultadosChanged.emit()
+        self.modoProcesoChanged.emit()
         self.renombrarHabilitadoChanged.emit()
 
     def _en_progreso(self, actual: int, total: int, mensaje: str) -> None:

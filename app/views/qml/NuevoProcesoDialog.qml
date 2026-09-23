@@ -13,9 +13,11 @@ Dialog {
 
     property var renombrarCtl: (typeof RenombrarCtl !== "undefined") ? RenombrarCtl : null
 
+    readonly property bool modoCsv: root.renombrarCtl ? root.renombrarCtl.modoProceso === "csv" : false
+
     readonly property bool listoParaAnalizar: comboEmpresa.currentIndex !== -1
-        && (radioExterna.checked || radioUrgencias.checked)
-        && fechaField.fechaIso !== ""
+        && (root.modoCsv || radioExterna.checked || radioUrgencias.checked)
+        && (root.modoCsv ? root.renombrarCtl.rutaCsv !== "" : fechaField.fechaIso !== "")
         && root.renombrarCtl
         && root.renombrarCtl.carpetaSeleccionada !== ""
         && !root.renombrarCtl.procesando
@@ -26,6 +28,7 @@ Dialog {
     function limpiarFormulario() {
         comboEmpresa.currentIndex = -1
         grupoTipoAtencion.checkedButton = null
+        grupoModoProceso.checkedButton = radioModoBd
         fechaField.limpiar()
     }
 
@@ -51,7 +54,15 @@ Dialog {
         onAccepted: if (root.renombrarCtl) root.renombrarCtl.seleccionarCarpeta(selectedFolder)
     }
 
+    FileDialog {
+        id: dialogoCsv
+        title: "Seleccionar archivo CSV"
+        nameFilters: ["Archivos CSV (*.csv)"]
+        onAccepted: if (root.renombrarCtl) root.renombrarCtl.seleccionarArchivoCsv(selectedFile)
+    }
+
     ButtonGroup { id: grupoTipoAtencion }
+    ButtonGroup { id: grupoModoProceso }
 
     ColumnLayout {
         anchors.fill: parent
@@ -67,6 +78,86 @@ Dialog {
                 font.bold: true
                 font.pixelSize: 13
                 color: Theme.primaryDark
+            }
+
+            ColumnLayout {
+                spacing: 6
+                Layout.fillWidth: true
+
+                Text { text: "Modalidad de procesamiento"; color: Theme.text; font.pixelSize: 12 }
+
+                RowLayout {
+                    spacing: 28
+
+                    RadioButton {
+                        id: radioModoBd
+                        text: "Base de datos"
+                        checked: true
+                        ButtonGroup.group: grupoModoProceso
+                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("bd")
+
+                        indicator: Rectangle {
+                            implicitWidth: 18
+                            implicitHeight: 18
+                            radius: 9
+                            x: radioModoBd.leftPadding
+                            y: parent.height / 2 - height / 2
+                            border.width: 1.5
+                            border.color: Theme.primary
+                            color: "transparent"
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 10
+                                height: 10
+                                radius: 5
+                                color: Theme.primary
+                                visible: radioModoBd.checked
+                            }
+                        }
+                        contentItem: Text {
+                            text: radioModoBd.text
+                            color: Theme.text
+                            leftPadding: radioModoBd.indicator.width + 8
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    }
+
+                    RadioButton {
+                        id: radioModoCsv
+                        text: "Archivo CSV"
+                        ButtonGroup.group: grupoModoProceso
+                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("csv")
+
+                        indicator: Rectangle {
+                            implicitWidth: 18
+                            implicitHeight: 18
+                            radius: 9
+                            x: radioModoCsv.leftPadding
+                            y: parent.height / 2 - height / 2
+                            border.width: 1.5
+                            border.color: Theme.primary
+                            color: "transparent"
+
+                            Rectangle {
+                                anchors.centerIn: parent
+                                width: 10
+                                height: 10
+                                radius: 5
+                                color: Theme.primary
+                                visible: radioModoCsv.checked
+                            }
+                        }
+                        contentItem: Text {
+                            text: radioModoCsv.text
+                            color: Theme.text
+                            leftPadding: radioModoCsv.indicator.width + 8
+                            verticalAlignment: Text.AlignVCenter
+                        }
+                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    }
+                }
             }
 
             ColumnLayout {
@@ -132,6 +223,7 @@ Dialog {
             ColumnLayout {
                 spacing: 6
                 Layout.fillWidth: true
+                visible: !root.modoCsv
 
                 Text { text: "Tipo de atención"; color: Theme.text; font.pixelSize: 12 }
 
@@ -211,6 +303,16 @@ Dialog {
             ColumnLayout {
                 spacing: 6
                 Layout.fillWidth: true
+                visible: root.modoCsv
+
+                Text { text: "Tipo de atención"; color: Theme.text; font.pixelSize: 12 }
+                Text { text: "Urgencias"; color: Theme.text; font.bold: true }
+            }
+
+            ColumnLayout {
+                spacing: 6
+                Layout.fillWidth: true
+                visible: !root.modoCsv
 
                 Text { text: "Fecha desde"; color: Theme.text; font.pixelSize: 12 }
 
@@ -233,6 +335,26 @@ Dialog {
                 font.bold: true
                 font.pixelSize: 13
                 color: Theme.primaryDark
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                visible: root.modoCsv
+
+                SecondaryButton {
+                    text: "Seleccionar archivo CSV"
+                    onClicked: dialogoCsv.open()
+                }
+
+                Text {
+                    Layout.fillWidth: true
+                    elide: Text.ElideMiddle
+                    color: Theme.text
+                    text: (root.renombrarCtl && root.renombrarCtl.rutaCsv)
+                          ? root.renombrarCtl.rutaCsv
+                          : "Ningún archivo CSV seleccionado"
+                }
             }
 
             RowLayout {

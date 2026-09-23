@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from app.models.tipo_atencion import TipoAtencion
+from app.services.empresas.normalizador import empresas_coinciden
 
 
 @dataclass(frozen=True)
@@ -27,3 +28,10 @@ class EmpresaConfig:
     # Nombres adicionales tal como aparecen en la base de datos que deben aceptarse como la
     # misma empresa (ej. regímenes registrados con formato distinto al de los sufijos estándar).
     nombres_alternativos: tuple[str, ...] = ()
+
+    def coincide_con(self, nombre_en_datos: str) -> bool:
+        """Determina si `nombre_en_datos` (BD o CSV) corresponde a esta empresa, probando
+        el nombre principal y sus alternativos."""
+        return any(
+            empresas_coinciden(nombre_en_datos, nombre) for nombre in (self.nombre, *self.nombres_alternativos)
+        )

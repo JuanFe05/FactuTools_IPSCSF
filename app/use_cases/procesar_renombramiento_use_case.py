@@ -16,6 +16,7 @@ from app.models.subcarpeta import (
 )
 from app.models.tipo_atencion import TipoAtencion
 from app.repositories.factura_repository import FacturaRepository
+from app.services.csv.factura_csv_source import FacturaCsvSource
 from app.services.empresas.registro_empresas import obtener_validador
 from app.services.empresas.validador_soportes import ValidadorSoportes
 from app.services.processors.carpeta_scanner import escanear_carpeta_principal
@@ -41,11 +42,18 @@ class ProcesarRenombramientoUseCase:
         carpeta_principal: Path,
         empresa: str,
         tipo_atencion: TipoAtencion,
-        fecha_desde: date,
+        fecha_desde: date | None = None,
         on_progreso: ProgresoCallback | None = None,
+        factura_provider: FacturaCsvSource | None = None,
     ) -> ResultadoProceso:
         return self._procesar(
-            carpeta_principal, empresa, tipo_atencion, fecha_desde, renombrar=False, on_progreso=on_progreso
+            carpeta_principal,
+            empresa,
+            tipo_atencion,
+            fecha_desde,
+            renombrar=False,
+            on_progreso=on_progreso,
+            factura_provider=factura_provider,
         )
 
     def renombrar(
@@ -53,11 +61,18 @@ class ProcesarRenombramientoUseCase:
         carpeta_principal: Path,
         empresa: str,
         tipo_atencion: TipoAtencion,
-        fecha_desde: date,
+        fecha_desde: date | None = None,
         on_progreso: ProgresoCallback | None = None,
+        factura_provider: FacturaCsvSource | None = None,
     ) -> ResultadoProceso:
         return self._procesar(
-            carpeta_principal, empresa, tipo_atencion, fecha_desde, renombrar=True, on_progreso=on_progreso
+            carpeta_principal,
+            empresa,
+            tipo_atencion,
+            fecha_desde,
+            renombrar=True,
+            on_progreso=on_progreso,
+            factura_provider=factura_provider,
         )
 
     def _procesar(
@@ -65,9 +80,10 @@ class ProcesarRenombramientoUseCase:
         carpeta_principal: Path,
         empresa: str,
         tipo_atencion: TipoAtencion,
-        fecha_desde: date,
+        fecha_desde: date | None,
         renombrar: bool,
         on_progreso: ProgresoCallback | None,
+        factura_provider: FacturaCsvSource | None = None,
     ) -> ResultadoProceso:
         validador = obtener_validador(empresa)
         subcarpetas = escanear_carpeta_principal(carpeta_principal)
@@ -80,13 +96,14 @@ class ProcesarRenombramientoUseCase:
                 on_progreso(indice, total, f"{verbo} carpeta {indice} de {total}")
 
             identificador = validador.extraer_identificador(subcarpeta.nombre)
-            factura = (
-                self._factura_repository.obtener_por_identificador(
+            if identificador is None:
+                factura = None
+            elif factura_provider is not None:
+                factura = factura_provider.obtener_factura(identificador, empresa)
+            else:
+                factura = self._factura_repository.obtener_por_identificador(
                     identificador, fecha_desde, tipo_atencion=tipo_atencion
                 )
-                if identificador
-                else None
-            )
             validacion = validador.validar(subcarpeta.pdfs, tipo_atencion, factura)
 
             estado_renombramiento = EstadoRenombramiento.PENDIENTE

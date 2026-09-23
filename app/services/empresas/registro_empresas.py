@@ -64,6 +64,10 @@ def empresas_disponibles() -> list[str]:
     return list(_CONFIGS.keys())
 
 
+def obtener_config_empresa(empresa: str) -> EmpresaConfig:
+    return _CONFIGS.get(empresa) or EmpresaConfig(nombre=empresa)
+
+
 def obtener_validador(empresa: str) -> ValidadorSoportes:
-    config = _CONFIGS.get(empresa) or EmpresaConfig(nombre=empresa)
-    return ValidadorPorPrefijos(config)
+    return ValidadorPorPrefijos(obtener_config_empresa(empresa))
+

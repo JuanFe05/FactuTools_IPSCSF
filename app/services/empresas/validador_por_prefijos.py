@@ -13,7 +13,6 @@ from app.models.factura_info import FacturaInfo
 from app.models.subcarpeta import ContextoRenombrado, ResultadoValidacion
 from app.models.tipo_atencion import TipoAtencion
 from app.services.empresas.empresa_config import EmpresaConfig
-from app.services.empresas.normalizador import empresas_coinciden
 
 _PATRON_PREFIJO = re.compile(r"[A-Za-z]+")
 
@@ -50,8 +49,7 @@ class ValidadorPorPrefijos:
         detalles: list[str] = []
         es_correcto = True
 
-        nombres_validos = (self._config.nombre, *self._config.nombres_alternativos)
-        if not any(empresas_coinciden(factura.empresa, nombre) for nombre in nombres_validos):
+        if not self._config.coincide_con(factura.empresa):
             es_correcto = False
             detalles.append(
                 f"La empresa de la factura ({factura.empresa}) no coincide con la empresa seleccionada."
