@@ -94,7 +94,7 @@ class ValidadorPorPrefijos:
         if not prefijo_detectado:
             return pdf.name
 
-        if prefijo_detectado in ("FE", "FEV", "FDE", "FACTURA"):
+        if prefijo_detectado in ("FE", "FEV", "FDE", "FACTURA", "SF"):
             tipo_documento = self._config.prefijo_factura
         else:
             tipo_documento = prefijo_detectado

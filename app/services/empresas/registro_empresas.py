@@ -13,15 +13,15 @@ from app.services.empresas.validador_por_prefijos import ValidadorPorPrefijos
 from app.services.empresas.validador_soportes import ValidadorSoportes
 
 # Consulta Externa: misma lista base para todas las empresas, con grupo alternativo PDX|HEV.
-_EXTERNA = ReglaSoportes(prefijos_obligatorios=("FE", "LDP", "OPF"), grupo_alternativo=("PDX", "HEV"))
+_EXTERNA = ReglaSoportes(prefijos_obligatorios=("SF", "LDP", "OPF"), grupo_alternativo=("PDX", "HEV"))
 
 # Urgencias: lista base y variantes por empresa.
-_URGENCIAS_CON_HAU = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "FE", "HAU"))
-_URGECNIAS_SANITAS = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "FE", "OPF"))
-_URGENCIAS_COOSALUD = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "FE", "HAU", "OPF"))
-_URGENCIAS_COMFENALCO = ReglaSoportes(prefijos_obligatorios=("HAU", "LDP", "FE"))
+_URGENCIAS_CON_HAU = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "HAU"))
+_URGECNIAS_SANITAS = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "OPF"))
+_URGENCIAS_COOSALUD = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "HAU", "OPF"))
+_URGENCIAS_COMFENALCO = ReglaSoportes(prefijos_obligatorios=("HAU", "LDP", "SF"))
 _URGENCIAS_SALUD_TOTAL = ReglaSoportes(
-    prefijos_obligatorios=("CRC", "HEV", "LDP", "OPF"), grupo_alternativo=("FE", "FACTURA")
+    prefijos_obligatorios=("CRC", "HEV", "LDP", "OPF"), grupo_alternativo=("SF", "FACTURA")
 )
 
 _CONFIGS: dict[str, EmpresaConfig] = {
@@ -46,8 +46,8 @@ _CONFIGS: dict[str, EmpresaConfig] = {
     "SOS EVENTO FLORIDA CONTRIBUTIVO & SUBSIDIADO": EmpresaConfig(
         nombre="SOS EVENTO FLORIDA CONTRIBUTIVO & SUBSIDIADO",
         reglas={
-            TipoAtencion.CONSULTA_EXTERNA: ReglaSoportes(prefijos_obligatorios=("FE", "CRC", "HEV", "LDP")),
-            TipoAtencion.URGENCIAS: ReglaSoportes(prefijos_obligatorios=("FE", "CRC", "HEV", "LDP")),
+            TipoAtencion.CONSULTA_EXTERNA: ReglaSoportes(prefijos_obligatorios=("SF", "CRC", "HEV", "LDP")),
+            TipoAtencion.URGENCIAS: ReglaSoportes(prefijos_obligatorios=("SF", "CRC", "HEV", "LDP")),
         },
     ),
     # Registradas como dos empresas distintas en la base de datos (contributivo y subsidiado),
