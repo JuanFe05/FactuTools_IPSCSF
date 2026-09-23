@@ -72,9 +72,41 @@ def _normalizar_fecha(valor: str) -> str:
 
 
 def _a_numero(valor: str) -> float:
+    """Parsea números en formatos europeos (15.360,00) y estadounidenses (15,360.00)."""
     valor = (valor or "").strip()
     if not valor:
         return 0.0
+    
+    puntos = valor.count(".")
+    comas = valor.count(",")
+    
+    # Regla: el separador más a la DERECHA es el decimal; los demás son de miles
+    if puntos == 0 and comas == 0:
+        # Sin separadores: "15360"
+        pass
+    elif puntos == 0 and comas == 1:
+        # Solo comas: "15,360" → coma es decimal
+        valor = valor.replace(",", ".")
+    elif puntos == 1 and comas == 0:
+        # Solo punto: "15.360" → punto es decimal
+        pass
+    elif puntos > 0 and comas > 0:
+        # Ambos: detectar cuál es decimal (más a la derecha)
+        if valor.rfind(",") > valor.rfind("."):
+            # "15.360,00" → coma es decimal (formato europeo)
+            valor = valor.replace(".", "").replace(",", ".")
+        else:
+            # "15,360.00" → punto es decimal (formato US)
+            valor = valor.replace(",", "")
+    elif puntos > 1:
+        # "15.360.000" → dividir por último punto
+        partes = valor.rsplit(".", 1)
+        valor = (partes[0].replace(".", "") + "." + partes[1]) if len(partes) > 1 else partes[0]
+    elif comas > 1:
+        # "15,360,000" → dividir por última coma
+        partes = valor.rsplit(",", 1)
+        valor = (partes[0].replace(",", "") + "." + partes[1]) if len(partes) > 1 else partes[0]
+    
     try:
         return float(valor)
     except ValueError:
@@ -90,7 +122,15 @@ class FacturaCsvSource:
 
     def _cargar(self, ruta_csv: Path) -> None:
         with ruta_csv.open(newline="", encoding="utf-8-sig") as archivo:
-            lector = csv.DictReader(archivo)
+            # Detectar delimitador automáticamente (,; o tabulador)
+            muestra = archivo.read(8192)  # Leer primeras líneas para detectar
+            archivo.seek(0)  # Volver al inicio
+            try:
+                delimitador = csv.Sniffer().sniff(muestra, delimiters=",;\t").delimiter
+            except csv.Error:
+                delimitador = ","  # Fallback por defecto
+            
+            lector = csv.DictReader(archivo, delimiter=delimitador)
             columnas = {(nombre or "").strip() for nombre in (lector.fieldnames or [])}
             faltantes = [columna for columna in COLUMNAS_REQUERIDAS if columna not in columnas]
             if faltantes:
@@ -102,28 +142,21 @@ class FacturaCsvSource:
                     self._filas_por_admision[admision].append(fila)
 
     def obtener_factura(self, identificador: str, empresa: str) -> FacturaInfo | None:
-        """Busca la factura de la admisión `identificador` (ya normalizada, solo dígitos) y
-        suma `cntdd1` de las filas que coincidan en factura (`cnsctvo_dcto`) y empresa."""
+        """Busca la admisión `identificador` y suma cntdd1 de TODOS los registros de esa
+        admisión, sin filtrar por empresa, número de factura ni otros campos. Retorna la
+        información de referencia (primer registro) pero con el total acumulado."""
         filas = self._filas_por_admision.get(identificador)
         if not filas:
             return None
 
-        cnsctvo_dcto = (filas[0].get("cnsctvo_dcto") or "").strip()
+        referencia = filas[0]
+        
+        # Sumar TODOS los cntdd1 de la admisión (regla: GROUP BY admision, sin otros filtros)
+        total = sum(_a_numero(fila.get("cntdd1", "")) for fila in filas)
+
+        cnsctvo_dcto = (referencia.get("cnsctvo_dcto") or "").strip()
         if not cnsctvo_dcto:
-            return None
-
-        config = obtener_config_empresa(empresa)
-        coincidentes = [
-            fila
-            for fila in filas
-            if (fila.get("cnsctvo_dcto") or "").strip() == cnsctvo_dcto
-            and config.coincide_con(fila.get("emprs", ""))
-        ]
-        if not coincidentes:
-            return None
-
-        referencia = coincidentes[0]
-        total = sum(_a_numero(fila.get("cntdd1", "")) for fila in coincidentes)
+            cnsctvo_dcto = "SIN_FACTURA"
 
         numero_factura = cnsctvo_dcto
         if not numero_factura.upper().startswith("SF"):

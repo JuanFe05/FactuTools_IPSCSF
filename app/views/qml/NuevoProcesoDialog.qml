@@ -8,7 +8,7 @@ Dialog {
     title: "Nuevo proceso"
     modal: true
     standardButtons: Dialog.NoButton
-    width: 520
+    width: 540
     anchors.centerIn: Overlay.overlay
 
     property var renombrarCtl: (typeof RenombrarCtl !== "undefined") ? RenombrarCtl : null
@@ -22,9 +22,6 @@ Dialog {
         && root.renombrarCtl.carpetaSeleccionada !== ""
         && !root.renombrarCtl.procesando
 
-    // "Borrar todo" limpia el estado en Python, pero los controles de este formulario
-    // (ComboBox/RadioButton/fecha) mantienen su propio estado visual y deben limpiarse
-    // aparte para no quedar desincronizados con el controlador.
     function limpiarFormulario() {
         comboEmpresa.currentIndex = -1
         grupoTipoAtencion.checkedButton = null
@@ -66,284 +63,308 @@ Dialog {
 
     ColumnLayout {
         anchors.fill: parent
-        spacing: 18
+        spacing: 0
 
-        // Sección 1 — Configuración del proceso
+        // Sección 1 — Modalidad de procesamiento
         ColumnLayout {
             Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
             spacing: 10
 
             Text {
-                text: "Configuración del proceso"
+                text: "Modalidad de procesamiento"
                 font.bold: true
-                font.pixelSize: 13
+                font.pixelSize: 12
                 color: Theme.primaryDark
             }
 
-            ColumnLayout {
-                spacing: 6
-                Layout.fillWidth: true
+            RowLayout {
+                spacing: 28
 
-                Text { text: "Modalidad de procesamiento"; color: Theme.text; font.pixelSize: 12 }
+                RadioButton {
+                    id: radioModoBd
+                    text: "Base de datos"
+                    checked: true
+                    ButtonGroup.group: grupoModoProceso
+                    onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("bd")
 
-                RowLayout {
-                    spacing: 28
+                    indicator: Rectangle {
+                        implicitWidth: 18
+                        implicitHeight: 18
+                        radius: 9
+                        x: radioModoBd.leftPadding
+                        y: parent.height / 2 - height / 2
+                        border.width: 1.5
+                        border.color: Theme.primary
+                        color: "transparent"
 
-                    RadioButton {
-                        id: radioModoBd
-                        text: "Base de datos"
-                        checked: true
-                        ButtonGroup.group: grupoModoProceso
-                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("bd")
-
-                        indicator: Rectangle {
-                            implicitWidth: 18
-                            implicitHeight: 18
-                            radius: 9
-                            x: radioModoBd.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.width: 1.5
-                            border.color: Theme.primary
-                            color: "transparent"
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 10
-                                height: 10
-                                radius: 5
-                                color: Theme.primary
-                                visible: radioModoBd.checked
-                            }
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: Theme.primary
+                            visible: radioModoBd.checked
                         }
-                        contentItem: Text {
-                            text: radioModoBd.text
-                            color: Theme.text
-                            leftPadding: radioModoBd.indicator.width + 8
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
-
-                    RadioButton {
-                        id: radioModoCsv
-                        text: "Archivo CSV"
-                        ButtonGroup.group: grupoModoProceso
-                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("csv")
-
-                        indicator: Rectangle {
-                            implicitWidth: 18
-                            implicitHeight: 18
-                            radius: 9
-                            x: radioModoCsv.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.width: 1.5
-                            border.color: Theme.primary
-                            color: "transparent"
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 10
-                                height: 10
-                                radius: 5
-                                color: Theme.primary
-                                visible: radioModoCsv.checked
-                            }
-                        }
-                        contentItem: Text {
-                            text: radioModoCsv.text
-                            color: Theme.text
-                            leftPadding: radioModoCsv.indicator.width + 8
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        HoverHandler { cursorShape: Qt.PointingHandCursor }
-                    }
-                }
-            }
-
-            ColumnLayout {
-                spacing: 6
-                Layout.fillWidth: true
-
-                Text { text: "Empresa"; color: Theme.text; font.pixelSize: 12 }
-
-                ComboBox {
-                    id: comboEmpresa
-                    Layout.fillWidth: true
-                    model: root.renombrarCtl ? root.renombrarCtl.empresasDisponibles : []
-                    displayText: currentIndex === -1 ? "Seleccionar empresa" : currentText
-                    currentIndex: -1
-                    hoverEnabled: true
-                    onActivated: if (root.renombrarCtl) root.renombrarCtl.seleccionarEmpresa(currentText)
-
-                    background: Rectangle {
-                        implicitHeight: 42
-                        radius: 8
-                        color: "white"
-                        border.width: comboEmpresa.activeFocus ? 2 : 1
-                        border.color: comboEmpresa.activeFocus ? Theme.primary : "#d7dbe8"
-                        Behavior on border.color { ColorAnimation { duration: 120 } }
-                    }
-
                     contentItem: Text {
-                        text: comboEmpresa.displayText
+                        text: radioModoBd.text
                         color: Theme.text
-                        leftPadding: 12
-                        rightPadding: 12
+                        leftPadding: radioModoBd.indicator.width + 8
                         verticalAlignment: Text.AlignVCenter
-                        elide: Text.ElideRight
                     }
-
-                    indicator: Text {
-                        text: "▾"
-                        color: Theme.primary
-                        anchors.right: parent.right
-                        anchors.rightMargin: 14
-                        anchors.verticalCenter: parent.verticalCenter
-                    }
-
-                    delegate: ItemDelegate {
-                        width: comboEmpresa.width
-                        highlighted: comboEmpresa.highlightedIndex === index
-                        contentItem: Text {
-                            text: modelData
-                            color: Theme.text
-                            leftPadding: 8
-                            verticalAlignment: Text.AlignVCenter
-                            elide: Text.ElideRight
-                        }
-                        background: Rectangle {
-                            color: highlighted ? "#eef1fb" : "white"
-                        }
-                    }
-
                     HoverHandler { cursorShape: Qt.PointingHandCursor }
                 }
-            }
 
-            ColumnLayout {
-                spacing: 6
-                Layout.fillWidth: true
-                visible: !root.modoCsv
+                RadioButton {
+                    id: radioModoCsv
+                    text: "Archivo CSV"
+                    ButtonGroup.group: grupoModoProceso
+                    onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarModoProceso("csv")
 
-                Text { text: "Tipo de atención"; color: Theme.text; font.pixelSize: 12 }
+                    indicator: Rectangle {
+                        implicitWidth: 18
+                        implicitHeight: 18
+                        radius: 9
+                        x: radioModoCsv.leftPadding
+                        y: parent.height / 2 - height / 2
+                        border.width: 1.5
+                        border.color: Theme.primary
+                        color: "transparent"
 
-                RowLayout {
-                    spacing: 28
-
-                    RadioButton {
-                        id: radioExterna
-                        text: "Consulta Externa"
-                        ButtonGroup.group: grupoTipoAtencion
-                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarTipoAtencion("Consulta Externa")
-
-                        indicator: Rectangle {
-                            implicitWidth: 18
-                            implicitHeight: 18
-                            radius: 9
-                            x: radioExterna.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.width: 1.5
-                            border.color: Theme.primary
-                            color: "transparent"
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 10
-                                height: 10
-                                radius: 5
-                                color: Theme.primary
-                                visible: radioExterna.checked
-                            }
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: Theme.primary
+                            visible: radioModoCsv.checked
                         }
-                        contentItem: Text {
-                            text: radioExterna.text
-                            color: Theme.text
-                            leftPadding: radioExterna.indicator.width + 8
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        HoverHandler { cursorShape: Qt.PointingHandCursor }
                     }
-
-                    RadioButton {
-                        id: radioUrgencias
-                        text: "Urgencias"
-                        ButtonGroup.group: grupoTipoAtencion
-                        onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarTipoAtencion("Urgencias")
-
-                        indicator: Rectangle {
-                            implicitWidth: 18
-                            implicitHeight: 18
-                            radius: 9
-                            x: radioUrgencias.leftPadding
-                            y: parent.height / 2 - height / 2
-                            border.width: 1.5
-                            border.color: Theme.primary
-                            color: "transparent"
-
-                            Rectangle {
-                                anchors.centerIn: parent
-                                width: 10
-                                height: 10
-                                radius: 5
-                                color: Theme.primary
-                                visible: radioUrgencias.checked
-                            }
-                        }
-                        contentItem: Text {
-                            text: radioUrgencias.text
-                            color: Theme.text
-                            leftPadding: radioUrgencias.indicator.width + 8
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    contentItem: Text {
+                        text: radioModoCsv.text
+                        color: Theme.text
+                        leftPadding: radioModoCsv.indicator.width + 8
+                        verticalAlignment: Text.AlignVCenter
                     }
-                }
-            }
-
-            ColumnLayout {
-                spacing: 6
-                Layout.fillWidth: true
-                visible: root.modoCsv
-
-                Text { text: "Tipo de atención"; color: Theme.text; font.pixelSize: 12 }
-                Text { text: "Urgencias"; color: Theme.text; font.bold: true }
-            }
-
-            ColumnLayout {
-                spacing: 6
-                Layout.fillWidth: true
-                visible: !root.modoCsv
-
-                Text { text: "Fecha desde"; color: Theme.text; font.pixelSize: 12 }
-
-                FechaField {
-                    id: fechaField
-                    onFechaIsoChanged: if (root.renombrarCtl) root.renombrarCtl.establecerFechaDesde(fechaIso)
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
                 }
             }
         }
 
         Rectangle { Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
 
-        // Sección 2 — Carpeta
+        // Sección 2 — Empresa
         ColumnLayout {
             Layout.fillWidth: true
-            spacing: 8
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
 
-            Text {
-                text: "Carpeta"
-                font.bold: true
-                font.pixelSize: 13
-                color: Theme.primaryDark
+            Text { text: "Empresa"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
+
+            ComboBox {
+                id: comboEmpresa
+                Layout.fillWidth: true
+                model: root.renombrarCtl ? root.renombrarCtl.empresasDisponibles : []
+                displayText: currentIndex === -1 ? "Seleccionar empresa" : currentText
+                currentIndex: -1
+                hoverEnabled: true
+                onActivated: if (root.renombrarCtl) root.renombrarCtl.seleccionarEmpresa(currentText)
+
+                background: Rectangle {
+                    implicitHeight: 42
+                    radius: 8
+                    color: "white"
+                    border.width: comboEmpresa.activeFocus ? 2 : 1
+                    border.color: comboEmpresa.activeFocus ? Theme.primary : "#d7dbe8"
+                    Behavior on border.color { ColorAnimation { duration: 120 } }
+                }
+
+                contentItem: Text {
+                    text: comboEmpresa.displayText
+                    color: Theme.text
+                    leftPadding: 12
+                    rightPadding: 12
+                    verticalAlignment: Text.AlignVCenter
+                    elide: Text.ElideRight
+                }
+
+                indicator: Text {
+                    text: "▾"
+                    color: Theme.primary
+                    anchors.right: parent.right
+                    anchors.rightMargin: 14
+                    anchors.verticalCenter: parent.verticalCenter
+                }
+
+                delegate: ItemDelegate {
+                    width: comboEmpresa.width
+                    highlighted: comboEmpresa.highlightedIndex === index
+                    contentItem: Text {
+                        text: modelData
+                        color: Theme.text
+                        leftPadding: 8
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                    }
+                    background: Rectangle {
+                        color: highlighted ? "#eef1fb" : "white"
+                    }
+                }
+
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
+        }
+
+        Rectangle { Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
+
+        // Sección 3 — Tipo de atención (solo si BD)
+        ColumnLayout {
+            visible: !root.modoCsv
+            Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
+
+            Text { text: "Tipo de atención"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
+
+            RowLayout {
+                spacing: 28
+
+                RadioButton {
+                    id: radioExterna
+                    text: "Consulta Externa"
+                    ButtonGroup.group: grupoTipoAtencion
+                    onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarTipoAtencion("Consulta Externa")
+
+                    indicator: Rectangle {
+                        implicitWidth: 18
+                        implicitHeight: 18
+                        radius: 9
+                        x: radioExterna.leftPadding
+                        y: parent.height / 2 - height / 2
+                        border.width: 1.5
+                        border.color: Theme.primary
+                        color: "transparent"
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: Theme.primary
+                            visible: radioExterna.checked
+                        }
+                    }
+                    contentItem: Text {
+                        text: radioExterna.text
+                        color: Theme.text
+                        leftPadding: radioExterna.indicator.width + 8
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                }
+
+                RadioButton {
+                    id: radioUrgencias
+                    text: "Urgencias"
+                    ButtonGroup.group: grupoTipoAtencion
+                    onCheckedChanged: if (checked && root.renombrarCtl) root.renombrarCtl.seleccionarTipoAtencion("Urgencias")
+
+                    indicator: Rectangle {
+                        implicitWidth: 18
+                        implicitHeight: 18
+                        radius: 9
+                        x: radioUrgencias.leftPadding
+                        y: parent.height / 2 - height / 2
+                        border.width: 1.5
+                        border.color: Theme.primary
+                        color: "transparent"
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 10
+                            height: 10
+                            radius: 5
+                            color: Theme.primary
+                            visible: radioUrgencias.checked
+                        }
+                    }
+                    contentItem: Text {
+                        text: radioUrgencias.text
+                        color: Theme.text
+                        leftPadding: radioUrgencias.indicator.width + 8
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                }
+            }
+        }
+
+        Rectangle { visible: !root.modoCsv; Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
+
+        // Sección 4 — Tipo de atención (fijo en modo CSV)
+        ColumnLayout {
+            visible: root.modoCsv
+            Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
+
+            Text { text: "Tipo de atención"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
+            Text { text: "Urgencias"; color: Theme.text; font.pixelSize: 13 }
+        }
+
+        Rectangle { visible: root.modoCsv; Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
+
+        // Sección 5 — Fecha desde (solo si BD)
+        ColumnLayout {
+            visible: !root.modoCsv
+            Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
+
+            Text { text: "Fecha desde"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
+
+            FechaField {
+                id: fechaField
+                onFechaIsoChanged: if (root.renombrarCtl) root.renombrarCtl.establecerFechaDesde(fechaIso)
+            }
+        }
+
+        Rectangle { visible: !root.modoCsv; Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
+
+        // Sección 6 — Archivo CSV (solo si CSV)
+        ColumnLayout {
+            visible: root.modoCsv
+            Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
+
+            Text { text: "Archivo CSV"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
 
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 8
-                visible: root.modoCsv
 
                 SecondaryButton {
-                    text: "Seleccionar archivo CSV"
+                    text: "Seleccionar CSV"
                     onClicked: dialogoCsv.open()
                 }
 
@@ -351,11 +372,26 @@ Dialog {
                     Layout.fillWidth: true
                     elide: Text.ElideMiddle
                     color: Theme.text
+                    font.pixelSize: 12
                     text: (root.renombrarCtl && root.renombrarCtl.rutaCsv)
-                          ? root.renombrarCtl.rutaCsv
-                          : "Ningún archivo CSV seleccionado"
+                          ? root.renombrarCtl.rutaCsv.split('/').pop()
+                          : "Ningún archivo seleccionado"
                 }
             }
+        }
+
+        Rectangle { visible: root.modoCsv; Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
+
+        // Sección 7 — Carpeta
+        ColumnLayout {
+            Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 16
+            Layout.bottomMargin: 16
+            spacing: 10
+
+            Text { text: "Carpeta"; color: Theme.primaryDark; font.bold: true; font.pixelSize: 12 }
 
             RowLayout {
                 Layout.fillWidth: true
@@ -370,32 +406,36 @@ Dialog {
                     Layout.fillWidth: true
                     elide: Text.ElideMiddle
                     color: Theme.text
+                    font.pixelSize: 12
                     text: (root.renombrarCtl && root.renombrarCtl.carpetaSeleccionada)
-                          ? root.renombrarCtl.carpetaSeleccionada
+                          ? root.renombrarCtl.carpetaSeleccionada.split('/').pop()
                           : "Ninguna carpeta seleccionada"
                 }
             }
 
             ColumnLayout {
                 visible: root.renombrarCtl && root.renombrarCtl.carpetaSeleccionada !== ""
-                spacing: 4
+                spacing: 8
                 Layout.fillWidth: true
+                Layout.topMargin: 8
+
+                Rectangle { Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
 
                 Text {
-                    text: root.renombrarCtl ? ("Subcarpetas encontradas: " + root.renombrarCtl.totalSubcarpetas) : ""
-                    font.pixelSize: 12
+                    text: root.renombrarCtl ? ("📁 Subcarpetas encontradas: " + root.renombrarCtl.totalSubcarpetas) : ""
+                    font.pixelSize: 11
                     color: Theme.text
                 }
                 Text {
-                    text: root.renombrarCtl ? ("Archivos PDF encontrados: " + root.renombrarCtl.totalPdfs) : ""
-                    font.pixelSize: 12
+                    text: root.renombrarCtl ? ("📄 Archivos PDF encontrados: " + root.renombrarCtl.totalPdfs) : ""
+                    font.pixelSize: 11
                     color: Theme.text
                 }
                 Text {
                     text: root.renombrarCtl && root.renombrarCtl.erroresPrevios.length === 0
-                          ? "Carpeta lista para analizar"
-                          : "Carpeta con advertencias"
-                    font.pixelSize: 12
+                          ? "✓ Carpeta lista para analizar"
+                          : "⚠ Carpeta con advertencias"
+                    font.pixelSize: 11
                     font.bold: true
                     color: root.renombrarCtl && root.renombrarCtl.erroresPrevios.length === 0
                            ? Theme.success
@@ -403,8 +443,8 @@ Dialog {
                 }
                 Text {
                     visible: root.renombrarCtl && root.renombrarCtl.erroresPrevios.length > 0
-                    text: root.renombrarCtl ? ("Advertencias: " + root.renombrarCtl.erroresPrevios.join(", ")) : ""
-                    font.pixelSize: 12
+                    text: root.renombrarCtl ? root.renombrarCtl.erroresPrevios.join(" • ") : ""
+                    font.pixelSize: 10
                     color: Theme.danger
                     wrapMode: Text.WordWrap
                     Layout.fillWidth: true
@@ -416,9 +456,13 @@ Dialog {
 
         Rectangle { Layout.fillWidth: true; height: 1; color: "#e5e8f0" }
 
-        // Sección 3 — Acciones
+        // Sección 8 — Acciones
         RowLayout {
             Layout.fillWidth: true
+            Layout.leftMargin: 20
+            Layout.rightMargin: 20
+            Layout.topMargin: 12
+            Layout.bottomMargin: 12
             spacing: 12
 
             Item { Layout.fillWidth: true }
