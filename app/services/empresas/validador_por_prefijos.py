@@ -22,7 +22,7 @@ def _prefijo(nombre_archivo: str) -> str:
     if not coincidencia:
         return ""
     prefijo = coincidencia.group(0).upper()
-    if prefijo in ("FEV", "FDE"):
+    if prefijo == "FDE":
         return "FE"
     return prefijo
 
@@ -76,6 +76,10 @@ class ValidadorPorPrefijos:
             if regla.grupo_alternativo:
                 encontrados += [p for p in regla.grupo_alternativo if p in prefijos_presentes]
             detalles.append("Soportes obligatorios encontrados: " + ", ".join(encontrados))
+
+        opcionales_presentes = [p for p in regla.prefijos_opcionales if p in prefijos_presentes]
+        if opcionales_presentes:
+            detalles.append("Soportes opcionales encontrados: " + ", ".join(opcionales_presentes))
 
         return ResultadoValidacion(es_correcto=es_correcto, detalles=detalles)
 

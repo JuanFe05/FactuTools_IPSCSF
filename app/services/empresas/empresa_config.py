@@ -14,6 +14,8 @@ class ReglaSoportes:
     prefijos_obligatorios: tuple[str, ...]
     # Si se define, basta con que al menos uno de estos prefijos esté presente.
     grupo_alternativo: tuple[str, ...] = ()
+    # Soportes que se identifican si están presentes, pero cuya ausencia nunca genera error.
+    prefijos_opcionales: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)

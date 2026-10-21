@@ -23,6 +23,12 @@ _URGENCIAS_COMFENALCO = ReglaSoportes(prefijos_obligatorios=("HAU", "LDP", "SF")
 _URGENCIAS_SALUD_TOTAL = ReglaSoportes(
     prefijos_obligatorios=("CRC", "HEV", "LDP", "OPF"), grupo_alternativo=("SF", "FACTURA")
 )
+# FACTURA o FEV (cualquiera sirve como documento de facturación) y PDX opcional.
+_URGENCIAS_FIDUPREVISORA = ReglaSoportes(
+    prefijos_obligatorios=("HAU", "HEV", "OPF", "EPI"),
+    grupo_alternativo=("FACTURA", "FEV"),
+    prefijos_opcionales=("PDX", "HAM"),
+)
 
 _CONFIGS: dict[str, EmpresaConfig] = {
     "COMFENALCO VALLE EPS CONTRIBUTIVO & SUBSIDIADO": EmpresaConfig(
@@ -56,6 +62,16 @@ _CONFIGS: dict[str, EmpresaConfig] = {
         nombre="SALUD TOTAL EPS-S S.A.",
         nombres_alternativos=("SALUD TOTAL EPS-S S.A. (SUBSIDIADO)",),
         reglas={TipoAtencion.URGENCIAS: _URGENCIAS_SALUD_TOTAL},
+    ),
+    "FIDEICOMISOS PATRIMONIOS AUTÓNOMOS FIDUPREVISORA S.": EmpresaConfig(
+        nombre="FIDEICOMISOS PATRIMONIOS AUTÓNOMOS FIDUPREVISORA S.",
+        nombres_alternativos=(
+            "FIDEICOMISOS PATRIMONIOS AUTONOMOS FIDUPREVISORA S.",
+            "FIDEICOMISOS PATRIMONIOS AUTONOMOS FIDUPREVISORA S",
+            "FIDEICOMISOS PATRIMONIOS AUTÓNOMOS FIDUPREVISORA S.A.",
+            "FIDEICOMISOS PATRIMONIOS AUTONOMOS FIDUPREVISORA S.A.",
+        ),
+        reglas={TipoAtencion.URGENCIAS: _URGENCIAS_FIDUPREVISORA},
     ),
 }
 
