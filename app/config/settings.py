@@ -2,12 +2,18 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
 from dotenv import load_dotenv
 
-_BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# En el ejecutable empaquetado, el ".env" se lee junto al .exe (no se incluye dentro del
+# binario) para que cada equipo pueda tener sus propias credenciales sin recompilar.
+if getattr(sys, "frozen", False):
+    _BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    _BASE_DIR = Path(__file__).resolve().parent.parent.parent
 load_dotenv(_BASE_DIR / ".env")
 
 
