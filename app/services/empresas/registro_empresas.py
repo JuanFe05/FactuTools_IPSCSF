@@ -16,7 +16,7 @@ from app.services.empresas.validador_soportes import ValidadorSoportes
 _EXTERNA = ReglaSoportes(prefijos_obligatorios=("SF", "LDP", "OPF"), grupo_alternativo=("PDX", "HEV"))
 
 # Urgencias: lista base y variantes por empresa.
-_URGENCIAS_CON_HAU = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "HAU"))
+_URGENCIAS_SIN_HUA = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF"))
 _URGECNIAS_SANITAS = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "OPF"))
 _URGENCIAS_COOSALUD = ReglaSoportes(prefijos_obligatorios=("LDP", "CRC", "HEV", "SF", "HAU", "OPF"))
 _URGENCIAS_COMFENALCO = ReglaSoportes(prefijos_obligatorios=("HAU", "LDP", "SF"))
@@ -42,7 +42,7 @@ _CONFIGS: dict[str, EmpresaConfig] = {
     ),
     "DISPENSARIO MEDICO DE CALI": EmpresaConfig(
         nombre="DISPENSARIO MEDICO DE CALI",
-        reglas={TipoAtencion.CONSULTA_EXTERNA: _EXTERNA, TipoAtencion.URGENCIAS: _URGENCIAS_CON_HAU},
+        reglas={TipoAtencion.CONSULTA_EXTERNA: _EXTERNA, TipoAtencion.URGENCIAS: _URGENCIAS_SIN_HUA},
     ),
     "EPS SANITAS CONTRIBUTIVO & SUBSIDIADO": EmpresaConfig(
         nombre="EPS SANITAS CONTRIBUTIVO & SUBSIDIADO",
